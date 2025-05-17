@@ -80,7 +80,7 @@
   ::selection {
     @apply bg-primary/20 text-primary;
   }
-  
+
   h1, h2, h3, h4, h5, h6 {
     @apply font-sans font-semibold;
   }
@@ -90,12 +90,40 @@
   .glass-card {
     @apply bg-white/80 backdrop-blur-sm border border-white/20 shadow-lg;
   }
-  
+
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70;
   }
-  
+
   .animate-in {
     animation: fadeIn 0.5s ease-out forwards;
+  }
+
+  .animate-spin-slow {
+    animation: spin 20s linear infinite;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
