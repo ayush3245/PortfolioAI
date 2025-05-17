@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,7 +6,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from '@/components/ui/separator';
-import { Download } from 'lucide-react';
 
 interface FormData {
   name: string;
@@ -27,9 +25,10 @@ interface FormData {
 
 interface InputFormProps {
   onSubmit: (data: FormData) => void;
+  initialData?: FormData | null;
 }
 
-const InputForm: React.FC<InputFormProps> = ({ onSubmit }) => {
+const InputForm: React.FC<InputFormProps> = ({ onSubmit, initialData }) => {
   const [formData, setFormData] = useState<FormData>({
     name: '',
     headline: '',
@@ -50,6 +49,13 @@ const InputForm: React.FC<InputFormProps> = ({ onSubmit }) => {
   
   const [skillInput, setSkillInput] = useState('');
   const [projectSkillInput, setProjectSkillInput] = useState('');
+  
+  // Initialize form with existing data if available
+  useEffect(() => {
+    if (initialData) {
+      setFormData(initialData);
+    }
+  }, [initialData]);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -144,18 +150,21 @@ const InputForm: React.FC<InputFormProps> = ({ onSubmit }) => {
   };
 
   return (
-    <Card className="w-full max-w-3xl mx-auto animate-fade-in">
-      <CardHeader>
-        <CardTitle className="text-2xl">Your Portfolio Details</CardTitle>
-        <CardDescription>
+    <Card className="w-full max-w-3xl mx-auto rounded-xl shadow-lg border-primary/10 hover:border-primary/20 transition-all duration-300 animate-fade-in">
+      <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-t-xl">
+        <CardTitle className="text-2xl bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">Your Portfolio Details</CardTitle>
+        <CardDescription className="text-base">
           Fill in the information below to generate your professional portfolio
         </CardDescription>
       </CardHeader>
       
-      <CardContent>
+      <CardContent className="pt-8">
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Personal Information</h3>
+            <h3 className="text-lg font-medium flex items-center gap-2">
+              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-sm">1</span>
+              Personal Information
+            </h3>
             
             <div className="grid gap-4">
               <div className="space-y-2">
@@ -243,11 +252,14 @@ const InputForm: React.FC<InputFormProps> = ({ onSubmit }) => {
             </div>
           </div>
           
-          <Separator />
+          <Separator className="bg-primary/10" />
           
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-medium">Showcase Your Work</h3>
+              <h3 className="text-lg font-medium flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-sm">2</span>
+                Showcase Your Work
+              </h3>
               <Button 
                 type="button" 
                 variant="ghost"
@@ -260,7 +272,7 @@ const InputForm: React.FC<InputFormProps> = ({ onSubmit }) => {
             </div>
             
             {formData.projects.map((project, projectIndex) => (
-              <Card key={projectIndex} className="bg-background p-4 border border-border">
+              <Card key={projectIndex} className="bg-muted/30 p-4 border border-border hover:shadow-md transition-all duration-300">
                 <div className="flex justify-between items-start mb-4">
                   <h4 className="font-medium">Project {projectIndex + 1}</h4>
                   {formData.projects.length > 1 && (
@@ -351,10 +363,13 @@ const InputForm: React.FC<InputFormProps> = ({ onSubmit }) => {
             ))}
           </div>
           
-          <Separator />
+          <Separator className="bg-primary/10" />
           
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Additional Information</h3>
+            <h3 className="text-lg font-medium flex items-center gap-2">
+              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-sm">3</span>
+              Additional Information
+            </h3>
             
             <div className="space-y-2">
               <Label htmlFor="hobbies">Hobbies & Interests</Label>
@@ -370,10 +385,13 @@ const InputForm: React.FC<InputFormProps> = ({ onSubmit }) => {
             </div>
           </div>
           
-          <Separator />
+          <Separator className="bg-primary/10" />
           
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Contact Information</h3>
+            <h3 className="text-lg font-medium flex items-center gap-2">
+              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-sm">4</span>
+              Contact Information
+            </h3>
             
             <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
               <div className="space-y-2">
@@ -422,7 +440,7 @@ const InputForm: React.FC<InputFormProps> = ({ onSubmit }) => {
             <Button 
               type="submit" 
               size="lg" 
-              className="transition-all duration-300 transform hover:scale-105 hover:shadow-lg focus:ring-4 font-medium"
+              className="transition-all duration-300 transform hover:scale-105 hover:shadow-lg focus:ring-4 font-medium bg-gradient-to-r from-primary to-primary/80 px-8 py-6"
             >
               Generate My Portfolio
             </Button>

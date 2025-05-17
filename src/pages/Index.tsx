@@ -43,17 +43,18 @@ const Index = () => {
   
   const handleReset = () => {
     setStep('form');
+    // We no longer reset portfolioData here, to preserve it for editing
   };
   
   return (
     <div className="min-h-screen bg-background">
       {step === 'form' && (
-        <>
+        <div className="flex flex-col">
           <Header />
-          <main className="w-full max-w-4xl mx-auto px-4 pb-16">
-            <InputForm onSubmit={handleFormSubmit} />
+          <main className="w-full max-w-4xl mx-auto px-4 pb-16 animate-fade-in">
+            <InputForm onSubmit={handleFormSubmit} initialData={portfolioData} />
           </main>
-        </>
+        </div>
       )}
       
       {step === 'loading' && (
