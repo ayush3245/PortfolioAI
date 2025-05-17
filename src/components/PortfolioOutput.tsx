@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Download, ChevronUp, Menu, X, Loader2 } from 'lucide-react';
-import { useSmooth } from '@/hooks/use-smooth';
+import { useSmooth } from '@/hooks/use-scroll';
 import { toast } from '@/components/ui/use-toast';
 import { downloadPortfolio } from '@/lib/download-utils';
 
