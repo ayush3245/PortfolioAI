@@ -1,0 +1,17 @@
+# Node.js and npm are required to run this application
+# This file lists the required packages and their versions
+
+# Core dependencies
+node>=18.0.0
+npm>=8.0.0
+
+# Project dependencies (these will be installed via package.json)
+# vite
+# react
+# typescript
+# shadcn-ui
+# tailwindcss
+
+# API dependencies
+# A Groq API key is required for the LLM integration
+# Get your API key from https://console.groq.com/
