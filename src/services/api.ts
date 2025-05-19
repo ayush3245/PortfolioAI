@@ -129,8 +129,7 @@ const fallbackProcessing = (data: PortfolioData): PortfolioData => {
  * @returns True if the API key is set, false otherwise
  */
 export const isApiKeySet = (): boolean => {
-  const apiKey = import.meta.env.VITE_GROQ_API_KEY;
-  const isSet = !!apiKey && apiKey !== 'your_groq_api_key_here';
-  console.log("API key is set:", isSet);
-  return isSet;
+  // This check is only used for UI messaging
+  // The actual API key used is from the Supabase Edge Function's environment
+  return true;
 };

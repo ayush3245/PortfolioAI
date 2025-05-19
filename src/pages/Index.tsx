@@ -5,7 +5,7 @@ import InputForm from '@/components/InputForm';
 import LoadingState from '@/components/LoadingState';
 import PortfolioOutput from '@/components/PortfolioOutput';
 import { toast } from '@/components/ui/use-toast';
-import { PortfolioData, processPortfolioWithGroq, isApiKeySet } from '@/services/api';
+import { PortfolioData, processPortfolioWithGroq } from '@/services/api';
 import { handleApiError } from '@/lib/error-utils';
 import {
   savePortfolioData,
@@ -49,16 +49,6 @@ const Index = () => {
     if (savedData) {
       setPortfolioData(savedData);
     }
-
-    // Check if API key is set and show a warning if not
-    if (!isApiKeySet()) {
-      toast({
-        title: "API Key Missing",
-        description: "Groq API key is not set. AI enhancement features will be disabled.",
-        variant: "destructive",
-        duration: 10000,
-      });
-    }
   }, []);
 
   const handleFormSubmit = async (data: PortfolioData) => {
@@ -69,24 +59,7 @@ const Index = () => {
     setIsProcessing(true);
 
     try {
-      // Check if API key is set
-      if (!isApiKeySet()) {
-        console.warn("API key not set, skipping enhancement");
-        toast({
-          title: "API Key Missing",
-          description: "Groq API key is not set. Your portfolio will be created without AI enhancements.",
-          duration: 5000,
-        });
-
-        // Just use the original data
-        setStepWithStorage('portfolio');
-
-        // Short delay to show loading state
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        return;
-      }
-
-      // Process the portfolio data with Groq API
+      // Process the portfolio data with Groq API via Edge Function
       console.log("Sending data to Groq API:", data);
       const enhancedData = await processPortfolioWithGroq(data);
       console.log("Received enhanced data:", enhancedData);
