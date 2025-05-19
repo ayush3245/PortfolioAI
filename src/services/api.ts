@@ -43,17 +43,11 @@ export const processPortfolioWithGroq = async (
   data: PortfolioData
 ): Promise<PortfolioData> => {
   try {
-    // Check if GROQ_API_KEY is available (this is now just for frontend messaging)
-    const apiKey = import.meta.env.VITE_GROQ_API_KEY;
-
-    if (!apiKey) {
-      console.warn("Groq API key not found. Using fallback processing.");
-      return fallbackProcessing(data);
-    }
-
-    console.log("Calling Supabase Edge Function to process portfolio");
+    console.log("Starting portfolio enhancement process");
     
     // Call the Supabase Edge Function
+    console.log("Calling Supabase Edge Function to process portfolio");
+    
     const { data: responseData, error } = await supabase.functions.invoke("enhance-portfolio", {
       body: {
         bio: data.bio,

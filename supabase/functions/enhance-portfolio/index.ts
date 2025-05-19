@@ -2,7 +2,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const GROQ_API_KEY = Deno.env.get("VITE_GROQ_API_KEY") || "";
+// Get the Groq API key from environment variables
+const GROQ_API_KEY = Deno.env.get("GROQ_API_KEY");
 
 // CORS headers for browser requests
 const corsHeaders = {
@@ -20,12 +21,14 @@ serve(async (req) => {
     // Get the request body
     const { bio, projects, hobbies } = await req.json();
 
+    console.log("Edge function received request with API key present:", !!GROQ_API_KEY);
+
     if (!GROQ_API_KEY) {
-      console.error("Groq API key not found");
+      console.error("Groq API key not found in environment variables");
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: "Groq API key not found",
+          error: "Groq API key not configured in Supabase secrets",
           originalData: { bio, projects, hobbies }
         }),
         { 
@@ -90,6 +93,8 @@ Keep the core information intact but improve the language, structure, and presen
       temperature: 0.7,
       max_tokens: 1024,
     };
+
+    console.log("Making API call to Groq");
 
     // Make the API request to Groq
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
