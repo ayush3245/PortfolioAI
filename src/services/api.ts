@@ -1,4 +1,6 @@
+
 import { toast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 // Define the interface for portfolio data
 export interface PortfolioData {
@@ -27,12 +29,13 @@ interface ApiResponse {
       description: string;
       skillsUsed: string[];
     }[];
+    enhancedHobbies?: string;
   };
   error?: string;
 }
 
 /**
- * Process portfolio data through Groq API
+ * Process portfolio data through Groq API via Supabase Edge Function
  * @param data Original portfolio data from user input
  * @returns Enhanced portfolio data with refined bio and project descriptions
  */
@@ -40,7 +43,7 @@ export const processPortfolioWithGroq = async (
   data: PortfolioData
 ): Promise<PortfolioData> => {
   try {
-    // Check if GROQ_API_KEY is available
+    // Check if GROQ_API_KEY is available (this is now just for frontend messaging)
     const apiKey = import.meta.env.VITE_GROQ_API_KEY;
 
     if (!apiKey) {
@@ -48,132 +51,55 @@ export const processPortfolioWithGroq = async (
       return fallbackProcessing(data);
     }
 
-    // Prepare the request payload
-    const payload = {
-      model: "llama3-8b-8192", // Using Llama 3 model
-      messages: [
-        {
-          role: "system",
-          content: `You are a professional portfolio assistant. Your task is to enhance the user's bio, project descriptions, and hobbies to make them more professional, engaging, and impactful.
-
-PORTFOLIO BEST PRACTICES:
-1. Focus on demonstrating skills through concrete examples, not just listing them
-2. Include specific metrics and outcomes for projects when possible
-3. Highlight problem-solving processes and technical challenges overcome
-4. Ensure content is concise, well-structured, and free of grammar errors
-5. For hobbies, show personality while maintaining professionalism
-
-IMPORTANT: You MUST respond with valid JSON in the following format:
-{
-  "bio": "enhanced bio text here",
-  "projects": [
-    {
-      "title": "project title (keep original)",
-      "description": "enhanced project description that follows best practices",
-      "skillsUsed": ["skill1", "skill2", "..."] (keep original skills)
-    },
-    ...more projects
-  ],
-  "hobbies": "enhanced hobbies text, formatted as a comma-separated list for visual presentation"
-}
-
-For the hobbies section:
-- Keep it as a comma-separated list (e.g., "Reading, Music, Travel")
-- Use concise but descriptive terms
-- Maintain the original interests but phrase them professionally
-- Aim for 3-6 distinct hobbies that show a well-rounded personality
-
-Keep the core information intact but improve the language, structure, and presentation. Do not add fictional details.`
-        },
-        {
-          role: "user",
-          content: JSON.stringify({
-            bio: data.bio,
-            projects: data.projects,
-            hobbies: data.hobbies
-          })
-        }
-      ],
-      temperature: 0.7,
-      max_tokens: 1024,
-    };
-
-    // Make the API request
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`
-      },
-      body: JSON.stringify(payload)
+    console.log("Calling Supabase Edge Function to process portfolio");
+    
+    // Call the Supabase Edge Function
+    const { data: responseData, error } = await supabase.functions.invoke("enhance-portfolio", {
+      body: {
+        bio: data.bio,
+        projects: data.projects,
+        hobbies: data.hobbies
+      }
     });
 
-    // Handle API response
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error?.message || "Failed to process portfolio data");
+    if (error) {
+      console.error("Edge function error:", error);
+      toast({
+        title: "Processing Error",
+        description: error.message || "Failed to enhance portfolio content",
+        variant: "destructive",
+      });
+      return fallbackProcessing(data);
     }
 
-    const result = await response.json();
-
-    // Log the raw response for debugging
-    console.log("Raw LLM response:", result.choices[0].message.content);
-
-    let enhancedData: PortfolioData;
-
-    try {
-      // Parse the LLM response
-      const llmResponse = JSON.parse(result.choices[0].message.content);
-      console.log("Parsed LLM response:", llmResponse);
-
-      // Check if the response has the expected structure
-      if (typeof llmResponse !== 'object' || llmResponse === null) {
-        console.error("Invalid LLM response format - not an object:", llmResponse);
-        enhancedData = fallbackProcessing(data);
-      } else {
-        // Create enhanced portfolio data
-        enhancedData = {
-          ...data,
-          bio: llmResponse.bio || data.bio,
-          projects: Array.isArray(llmResponse.projects) ? llmResponse.projects : data.projects,
-          hobbies: llmResponse.hobbies || data.hobbies
-        };
-
-        // Log the enhanced data for debugging
-        console.log("Enhanced data:", enhancedData);
-      }
-    } catch (parseError) {
-      console.error("Error parsing LLM response:", parseError);
-      console.log("Failed to parse content:", result.choices[0].message.content);
-
-      // Try to extract content directly if JSON parsing fails
-      try {
-        const content = result.choices[0].message.content;
-
-        // If the response contains bio or project information but isn't valid JSON,
-        // try to extract it using a more lenient approach
-        if (content.includes("bio") || content.includes("projects")) {
-          // Simple extraction for bio if present
-          const bioMatch = content.match(/"bio"\s*:\s*"([^"]*)"/);
-          const enhancedBio = bioMatch ? bioMatch[1] : data.bio;
-
-          enhancedData = {
-            ...data,
-            bio: enhancedBio
-          };
-        } else {
-          enhancedData = fallbackProcessing(data);
-        }
-      } catch (extractError) {
-        console.error("Error extracting content from LLM response:", extractError);
-        enhancedData = fallbackProcessing(data);
-      }
+    // Process the response from the edge function
+    const response = responseData as ApiResponse;
+    
+    if (!response.success) {
+      console.error("Edge function reported failure:", response.error);
+      toast({
+        title: "Processing Error",
+        description: response.error || "Failed to enhance portfolio content",
+        variant: "destructive",
+      });
+      return fallbackProcessing(data);
     }
+
+    // Create enhanced portfolio data
+    const enhancedData: PortfolioData = {
+      ...data,
+      bio: response.data?.enhancedBio || data.bio,
+      projects: response.data?.enhancedProjects || data.projects,
+      hobbies: response.data?.enhancedHobbies || data.hobbies
+    };
+
+    // Log the enhanced data for debugging
+    console.log("Enhanced data received from edge function:", enhancedData);
 
     return enhancedData;
   } catch (error) {
     // Handle errors
-    console.error("Error processing portfolio with Groq:", error);
+    console.error("Error processing portfolio with Edge Function:", error);
     toast({
       title: "Processing Error",
       description: error instanceof Error ? error.message : "Failed to enhance portfolio content",
