@@ -114,7 +114,7 @@ If you prefer to install manually:
    - Copy `.env.example` to create a new `.env` file
    - Add your Groq API key to the `.env` file:
      ```
-     VITE_GROQ_API_KEY=your_groq_api_key_here
+     GROQ_API_KEY=your_groq_api_key_here
      ```
 
 ### Troubleshooting Installation

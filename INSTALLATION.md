@@ -62,13 +62,13 @@ This guide provides detailed instructions for installing and setting up Portfoli
 ### Linux
 
 1. **Using package manager**:
-   
+
    For Ubuntu/Debian:
    ```
    sudo apt update
    sudo apt install nodejs npm
    ```
-   
+
    For Fedora:
    ```
    sudo dnf install nodejs
@@ -99,7 +99,7 @@ This guide provides detailed instructions for installing and setting up Portfoli
    ```
    npm install
    ```
-   
+
    If you encounter permission errors:
    - On Windows: Run Command Prompt or PowerShell as Administrator
    - On macOS/Linux: Use `sudo npm install` or fix npm permissions
@@ -108,17 +108,17 @@ This guide provides detailed instructions for installing and setting up Portfoli
    ```
    cp .env.example .env
    ```
-   
+
    Edit the `.env` file and add your Groq API key:
    ```
-   VITE_GROQ_API_KEY=your_groq_api_key_here
+   GROQ_API_KEY=your_groq_api_key_here
    ```
 
 4. **Start the development server**:
    ```
    npm run dev
    ```
-   
+
    The application should now be running at http://localhost:8080
 
 ## Troubleshooting Common Issues
@@ -143,7 +143,7 @@ This error occurs when npm is not in your system's PATH.
    mkdir ~/.npm-global
    npm config set prefix '~/.npm-global'
    ```
-   
+
    Add to your .bashrc or .zshrc:
    ```
    export PATH=~/.npm-global/bin:$PATH
