@@ -121,7 +121,7 @@ const fallbackProcessing = (data: PortfolioData): PortfolioData => {
 export const isSupabaseConnected = (): boolean => {
   try {
     // Check if supabase client is properly initialized
-    const isConnected = !!supabase && !!supabase.supabaseUrl;
+    const isConnected = !!supabase && !!supabase.auth;
     console.log("Supabase connection check:", isConnected);
     return isConnected;
   } catch (error) {
