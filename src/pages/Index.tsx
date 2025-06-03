@@ -5,7 +5,7 @@ import InputForm from '@/components/InputForm';
 import LoadingState from '@/components/LoadingState';
 import PortfolioOutput from '@/components/PortfolioOutput';
 import { toast } from '@/components/ui/use-toast';
-import { PortfolioData, processPortfolioWithGroq } from '@/services/api';
+import { PortfolioData, processPortfolioWithGroq, isSupabaseConnected } from '@/services/api';
 import { handleApiError } from '@/lib/error-utils';
 import {
   savePortfolioData,
@@ -49,6 +49,10 @@ const Index = () => {
     if (savedData) {
       setPortfolioData(savedData);
     }
+
+    // Check Supabase connection on app start
+    const connected = isSupabaseConnected();
+    console.log("Supabase connection status:", connected);
   }, []);
 
   const handleFormSubmit = async (data: PortfolioData) => {
@@ -59,8 +63,8 @@ const Index = () => {
     setIsProcessing(true);
 
     try {
-      // Process the portfolio data with Groq API via Edge Function
-      console.log("Sending data to Groq API:", data);
+      // Process the portfolio data with Supabase Edge Function
+      console.log("Sending data to Supabase Edge Function:", data);
       const enhancedData = await processPortfolioWithGroq(data);
       console.log("Received enhanced data:", enhancedData);
 
@@ -69,9 +73,7 @@ const Index = () => {
       const projectsChanged = JSON.stringify(enhancedData.projects) !== JSON.stringify(data.projects);
       const hobbiesChanged = enhancedData.hobbies !== data.hobbies;
 
-      console.log("Bio changed:", bioChanged);
-      console.log("Projects changed:", projectsChanged);
-      console.log("Hobbies changed:", hobbiesChanged);
+      console.log("Content enhancement status:", { bioChanged, projectsChanged, hobbiesChanged });
 
       // Update the portfolio data with enhanced content
       setPortfolioDataWithStorage(enhancedData);
@@ -87,7 +89,7 @@ const Index = () => {
       } else {
         toast({
           title: "Portfolio Generated!",
-          description: "Your portfolio has been created, but no AI enhancements were applied.",
+          description: "Your portfolio has been created successfully.",
           duration: 5000,
         });
       }

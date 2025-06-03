@@ -12,23 +12,18 @@ export default defineConfig(async ({ mode }) => {
     try {
       const { componentTagger } = await import('lovable-tagger');
       plugins.push(componentTagger());
-    } catch (error) {
-      console.warn('lovable-tagger not available:', error.message);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.warn('lovable-tagger not available:', errorMessage);
     }
   }
 
   return {
-    base: mode === 'production' ? '/PortfolioAI/' : '/',
+    // Remove GitHub Pages base path - deploy on Lovable only
+    base: '/',
     server: {
       host: "::",
       port: 8080,
-      proxy: {
-        '/api/groq': {
-          target: 'https://api.groq.com',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/groq/, ''),
-        }
-      }
     },
     define: {
       // No need to define environment variables with VITE_ prefix as they are automatically exposed

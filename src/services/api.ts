@@ -1,5 +1,6 @@
 
 import { toast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 // Define the interface for portfolio data
 export interface PortfolioData {
@@ -18,10 +19,8 @@ export interface PortfolioData {
   github: string;
 }
 
-
-
 /**
- * Process portfolio data through Groq API directly
+ * Process portfolio data through Supabase Edge Function
  * @param data Original portfolio data from user input
  * @returns Enhanced portfolio data with refined bio and project descriptions
  */
@@ -29,44 +28,36 @@ export const processPortfolioWithGroq = async (
   data: PortfolioData
 ): Promise<PortfolioData> => {
   try {
-    console.log("Starting portfolio enhancement process");
+    console.log("Starting portfolio enhancement process with Supabase Edge Function");
 
-    // Make a request to our server-side API endpoint
-    console.log("Making request to server-side API endpoint");
-
-    const response = await fetch("http://localhost:3000/api/enhance-portfolio", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
+    // Call the Supabase Edge Function
+    const { data: response, error } = await supabase.functions.invoke('enhance-portfolio', {
+      body: {
         bio: data.bio,
         projects: data.projects,
         hobbies: data.hobbies
-      })
+      }
     });
 
-    // Handle API response
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("API error:", errorData);
+    // Handle errors from the Edge Function
+    if (error) {
+      console.error("Supabase Edge Function error:", error);
       toast({
         title: "Processing Error",
-        description: errorData.error || "Failed to enhance portfolio content",
+        description: error.message || "Failed to enhance portfolio content",
         variant: "destructive",
       });
       return fallbackProcessing(data);
     }
 
     // Process the response
-    const responseData = await response.json();
-    console.log("Received response from API:", responseData);
+    console.log("Received response from Supabase Edge Function:", response);
 
-    if (!responseData.success) {
-      console.error("API reported failure:", responseData.error);
+    if (!response?.success) {
+      console.error("Edge Function reported failure:", response?.error);
       toast({
         title: "Processing Error",
-        description: responseData.error || "Failed to enhance portfolio content",
+        description: response?.error || "Failed to enhance portfolio content",
         variant: "destructive",
       });
       return fallbackProcessing(data);
@@ -75,18 +66,24 @@ export const processPortfolioWithGroq = async (
     // Create enhanced portfolio data
     const enhancedData: PortfolioData = {
       ...data,
-      bio: responseData.data?.enhancedBio || data.bio,
-      projects: responseData.data?.enhancedProjects || data.projects,
-      hobbies: responseData.data?.enhancedHobbies || data.hobbies
+      bio: response.data?.enhancedBio || data.bio,
+      projects: response.data?.enhancedProjects || data.projects,
+      hobbies: response.data?.enhancedHobbies || data.hobbies
     };
 
     // Log the enhanced data for debugging
     console.log("Enhanced data:", enhancedData);
 
+    toast({
+      title: "Portfolio Enhanced!",
+      description: "Your portfolio content has been improved using AI.",
+      duration: 5000,
+    });
+
     return enhancedData;
   } catch (error) {
     // Handle errors
-    console.error("Error processing portfolio with API:", error);
+    console.error("Error processing portfolio with Supabase Edge Function:", error);
     toast({
       title: "Processing Error",
       description: error instanceof Error ? error.message : "Failed to enhance portfolio content",
@@ -94,12 +91,12 @@ export const processPortfolioWithGroq = async (
     });
 
     // Return original data if there's an error
-    return data;
+    return fallbackProcessing(data);
   }
 };
 
 /**
- * Fallback processing when API is not available
+ * Fallback processing when Edge Function is not available
  * @param data Original portfolio data
  * @returns Same data with minimal enhancements
  */
@@ -118,12 +115,17 @@ const fallbackProcessing = (data: PortfolioData): PortfolioData => {
 };
 
 /**
- * Debug function to check if the API key is set
- * @returns True if the API key is set, false otherwise
+ * Debug function to check if the Supabase connection is working
+ * @returns True if connected, false otherwise
  */
-export const isApiKeySet = (): boolean => {
-  // Check if the API key is set in the environment variables
-  const apiKey = import.meta.env.VITE_GROQ_API_KEY;
-  console.log("API Key check:", !!apiKey, "Key length:", apiKey ? apiKey.length : 0);
-  return !!apiKey;
+export const isSupabaseConnected = (): boolean => {
+  try {
+    // Check if supabase client is properly initialized
+    const isConnected = !!supabase && !!supabase.supabaseUrl;
+    console.log("Supabase connection check:", isConnected);
+    return isConnected;
+  } catch (error) {
+    console.error("Supabase connection error:", error);
+    return false;
+  }
 };
