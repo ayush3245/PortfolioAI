@@ -74,7 +74,7 @@ NO EXPLANATIONS OR ADDITIONAL TEXT ARE ALLOWED IN YOUR RESPONSE. RETURN ONLY VAL
         }
       ],
       temperature: 0.7,
-      max_tokens: 1024,
+      max_tokens: 2048,
     };
 
     // Make the API request to Groq
@@ -133,6 +133,38 @@ NO EXPLANATIONS OR ADDITIONAL TEXT ARE ALLOWED IN YOUR RESPONSE. RETURN ONLY VAL
         jsonStr = jsonStr.substring(0, jsonStr.lastIndexOf('}') + 1);
       }
 
+      // Check if JSON is incomplete and try to fix it
+      console.log('JSON ends with:', JSON.stringify(jsonStr.slice(-20)));
+      console.log('JSON length:', jsonStr.length);
+
+      // Check if JSON is incomplete - either doesn't end with } or has unmatched brackets/braces
+      const openBraces = (jsonStr.match(/{/g) || []).length;
+      const closeBraces = (jsonStr.match(/}/g) || []).length;
+      const openBrackets = (jsonStr.match(/\[/g) || []).length;
+      const closeBrackets = (jsonStr.match(/\]/g) || []).length;
+
+      if (!jsonStr.endsWith('}') || openBraces !== closeBraces || openBrackets !== closeBrackets) {
+        console.log('JSON appears incomplete, attempting to fix...');
+
+        // If the string ends with an incomplete string value, close it
+        if (!jsonStr.endsWith('"') && !jsonStr.endsWith(',') && !jsonStr.endsWith('}')) {
+          jsonStr += '"';
+        }
+
+        // Close any open arrays first
+        for (let i = 0; i < openBrackets - closeBrackets; i++) {
+          jsonStr += ']';
+        }
+
+        // Then close any open objects
+        for (let i = 0; i < openBraces - closeBraces; i++) {
+          jsonStr += '}';
+        }
+
+        console.log('Fixed JSON string:', jsonStr);
+      }
+
+      console.log('Final JSON string to parse:', jsonStr);
       const llmResponse = JSON.parse(jsonStr);
       console.log('Successfully parsed Groq response');
 
