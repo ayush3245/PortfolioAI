@@ -8,17 +8,9 @@ PortfolioAI is an intelligent portfolio generator that helps you create a profes
 
 PortfolioAI uses the power of Large Language Models (LLMs) through the Groq API to refine and enhance your bio and project descriptions, making them more professional and engaging. The application features a user-friendly interface, smooth animations, and responsive design to ensure your portfolio looks great on any device.
 
-**Demo URL**: https://lovable.dev/projects/5ce5031b-9469-4274-9655-97abf5b28b9c
-
 ## How can I edit this code?
 
 There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/5ce5031b-9469-4274-9655-97abf5b28b9c) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
 
 **Use your preferred IDE**
 
